@@ -8,6 +8,7 @@ import (
 	dto "todo-app/dto/result"
 	userdto "todo-app/dto/user"
 	"todo-app/models"
+	"todo-app/pkg/bcrypt"
 	jwtToken "todo-app/pkg/jwt"
 	"todo-app/repository"
 
@@ -41,7 +42,7 @@ func (h *handlerUser) Login(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()})
 	}
 
-	isValid := CheckPassword(dbuser.Password, user.Password)
+	isValid := bcrypt.CheckPasswordHash(user.Password, dbuser.Password)
 	if !isValid {
 		fmt.Println(isValid)
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: "wrong email or password"})
@@ -68,14 +69,6 @@ func (h *handlerUser) Login(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: loginResponse})
 
 }
-func CheckPassword(passwordInput, password string) bool {
-	if passwordInput == password && password != "" {
-		return true
-	} else {
-		fmt.Println("Password password not macth")
-		return false
-	}
-}
 
 func (h *handlerUser) CreateUser(c echo.Context) error {
 
@@ -84,9 +77,15 @@ func (h *handlerUser) CreateUser(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()})
 	}
 
+	requestPassword := c.FormValue("password")
+	password, err := bcrypt.HashingPassword(requestPassword)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()})
+	}
+
 	user := models.User{
 		Email:    c.FormValue("email"),
-		Password: c.FormValue("password"),
+		Password: password,
 	}
 
 	newUser, err := h.UserRepository.CreateUser(user)
