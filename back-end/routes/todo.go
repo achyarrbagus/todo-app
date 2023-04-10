@@ -15,5 +15,6 @@ func TodoRoutes(e *echo.Group) {
 	h := handlers.HandlerTodo(todoRepository)
 
 	e.POST("/todo", middleware.Auth(h.CreateTodo))
+	e.DELETE("/todo", middleware.Auth(h.DeleteTodo))
 
 }

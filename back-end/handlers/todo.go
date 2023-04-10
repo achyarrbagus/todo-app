@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	dto "todo-app/dto/result"
 	tododto "todo-app/dto/todo"
 	"todo-app/models"
@@ -18,6 +19,29 @@ type handlerTodo struct {
 
 func HandlerTodo(TodoRepository repository.TodoRepository) *handlerTodo {
 	return &handlerTodo{TodoRepository}
+}
+
+func (h *handlerTodo) DeleteTodo(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("failed to get params")
+	}
+
+	data, err := h.TodoRepository.GetTodo(id)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Code: http.StatusInternalServerError, Message: err.Error()})
+
+	}
+
+	updateData, err := h.TodoRepository.DeleteTodo(data)
+	if err != nil {
+		fmt.Println("failed delete data")
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Code: http.StatusInternalServerError, Message: err.Error()})
+
+	}
+	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: convertTodo(updateData)})
+
 }
 
 func (h *handlerTodo) CreateTodo(c echo.Context) error {
@@ -44,7 +68,7 @@ func (h *handlerTodo) CreateTodo(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Code: http.StatusInternalServerError, Message: err.Error()})
 
 	}
-	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: data})
+	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: convertTodo(data)})
 
 }
 func convertTodo(u models.Todo) tododto.TodoResponse {
