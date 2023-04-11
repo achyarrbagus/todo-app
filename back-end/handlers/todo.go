@@ -9,6 +9,7 @@ import (
 	"todo-app/models"
 	"todo-app/repository"
 
+	"github.com/go-playground/validator"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/labstack/echo/v4"
 )
@@ -19,6 +20,54 @@ type handlerTodo struct {
 
 func HandlerTodo(TodoRepository repository.TodoRepository) *handlerTodo {
 	return &handlerTodo{TodoRepository}
+}
+
+func (h *handlerTodo) UpdateTodo(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("failed to get params")
+	}
+	data, err := h.TodoRepository.GetTodo(id)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Code: http.StatusInternalServerError, Message: err.Error()})
+
+	}
+
+	request := tododto.UpdateTodoRequest{
+		Title:     c.FormValue("title"),
+		Body:      c.FormValue("body"),
+		StartDate: c.FormValue("startDate"),
+		EndDate:   c.FormValue("endDate"),
+	}
+
+	validation := validator.New()
+	err = validation.Struct(validation)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Code: http.StatusInternalServerError, Message: err.Error()})
+	}
+
+	if request.Title != "" {
+		data.Title = request.Title
+	}
+	if request.Body != "" {
+		data.Body = request.Body
+	}
+	if request.StartDate != "" {
+		data.StartDate = request.StartDate
+	}
+	if request.EndDate != "" {
+		data.EndDate = request.EndDate
+	}
+
+	data, err = h.TodoRepository.UpdateTodo(data)
+	if err != nil {
+		fmt.Println("failed Update data")
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Code: http.StatusInternalServerError, Message: err.Error()})
+
+	}
+	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: convertTodo(data)})
+
 }
 
 func (h *handlerTodo) DeleteTodo(c echo.Context) error {
