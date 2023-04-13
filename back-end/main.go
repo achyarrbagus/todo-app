@@ -14,7 +14,7 @@ func main() {
 	database.AutoMigration()
 	e := echo.New()
 
-	routes.RouteInit(e.Group("/todo-app/v1"))
+	routes.RouteInit(e.Group("/todolist.api.devcode.gethired.id"))
 	fmt.Println("server running localhost:5000 ")
 	e.Logger.Fatal(e.Start("localhost:5000")) // delete localhost
 }

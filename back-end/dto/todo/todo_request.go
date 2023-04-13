@@ -1,8 +1,15 @@
 package tododto
 
 type CreateTodoRequest struct {
-	Title     string `json:"title" gorm:"type:varchar(225)"`
-	Body      string `json:"body" gorm:"type:varchar(225)"`
-	StartDate string `json:"startDate" gorm:"type:varchar(225)"`
-	EndDate   string `json:"endDate" gorm:"type:varchar(225)"`
+	ActivityGroupId int    `json:"activity_group_id" gorm:"type:varchar(225)"`
+	Title           string `json:"title" gorm:"type:varchar(225)"`
+	IsActive        bool   `json:"is_active" gorm:"type:varchar(225)"`
+	Priority        string `json:"priority" gorm:"type:varchar(225)"`
+}
+
+type UpdateTodoRequest struct {
+	Title    string `json:"title" gorm:"type:varchar(225)"`
+	Priority string `json:"priority" gorm:"type:varchar(225)"`
+	IsActive bool   `json:"is_active" gorm:"type:varchar(225)"`
+	Status   string `json:"status" gorm:"type:varchar(225)"`
 }
